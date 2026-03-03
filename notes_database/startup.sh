@@ -1,9 +1,12 @@
 #!/bin/bash
 
 # Minimal PostgreSQL startup script with full paths
-DB_NAME="myapp"
-DB_USER="appuser"
-DB_PASSWORD="dbuser123"
+# NoteMaster defaults requested by user:
+# - credentials: postgres/postgres
+# - database: notemaster
+DB_NAME="notemaster"
+DB_USER="postgres"
+DB_PASSWORD="postgres"
 DB_PORT="5000"
 
 echo "Starting PostgreSQL setup..."
@@ -150,6 +153,16 @@ echo ""
 
 echo "Environment variables saved to db_visualizer/postgres.env"
 echo "To use with Node.js viewer, run: source db_visualizer/postgres.env"
+
+# Apply schema (idempotent) so the DB is ready for the backend immediately.
+# This keeps schema application consistent with existing startup workflow.
+if [ -f "schema.sql.sh" ]; then
+    echo ""
+    echo "Applying NoteMaster schema..."
+    DB_NAME="${DB_NAME}" DB_USER="${DB_USER}" DB_PASSWORD="${DB_PASSWORD}" DB_PORT="${DB_PORT}" bash ./schema.sql.sh
+else
+    echo "⚠ schema.sql.sh not found; skipping schema application"
+fi
 
 echo "To connect to the database, use one of the following commands:"
 echo "psql -h localhost -U ${DB_USER} -d ${DB_NAME} -p ${DB_PORT}"
